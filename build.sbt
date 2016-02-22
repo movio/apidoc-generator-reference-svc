@@ -25,6 +25,9 @@ lazy val svc = project.in(file("."))
       // Kafka
       "mc" %% "kafka-testkit" % "1.3.3" % Test,
 
+      // JWT
+      "com.pauldijou" %% "jwt-play" % "0.5.0",
+
       // Elastic
       "mm" %% "estesttoolslib" % "1.0.1" % Test,
 
