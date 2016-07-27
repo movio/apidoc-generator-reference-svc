@@ -82,6 +82,7 @@ val personEntity2 =
   val personEntities = Seq(personEntity1, personEntity2)
 
   lazy val brokerConnectionString = kafkaServer.config.hostName + ":" + kafkaServer.config.port
+  lazy val topicInstance = "test"
   lazy val tenant = "test"
 
   lazy val testConfig = ConfigFactory.parseString(s"""
@@ -91,12 +92,15 @@ val personEntity2 =
       |
       |movio.apidoc.generator.reference.kafka {
       |  producer {
+      |    topic-instance = "$topicInstance"
       |    broker-connection-string : "$brokerConnectionString"
       |  }
       |}
       |
       |movio.apidoc.generator.reference.kafka {
       |  consumer {
+      |    topic-instance = "$topicInstance"
+      |    tenants = ["$tenant"]
       |    offset-storage-type = "kafka"
       |    offset-storage-dual-commit = false
       |    timeout.ms = "100"
