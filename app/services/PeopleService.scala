@@ -6,19 +6,23 @@
 
 package services
 
+import scala.concurrent.Future
+import scala.util.Try
 import javax.inject.Inject
 
 import com.typesafe.config.Config
 
 import play.api.mvc.Request
-import scala.concurrent.Future
-import scala.util.Try
+import play.api.Logger
 
 class PeopleService @Inject() (config: Config) {
   import movio.apidoc.generator.reference.v0.models._
   import movio.apidoc.generator.reference.v0.kafka._
   import play.api.libs.concurrent.Execution.Implicits.defaultContext
   val kafkaPersonProducer = new KafkaPersonProducer(config)
+
+  private val logger = Logger(this.getClass)
+
   
   def post[T](
     request: Request[T],
@@ -26,6 +30,7 @@ class PeopleService @Inject() (config: Config) {
     tenant: String
   ): Future[Try[movio.apidoc.generator.reference.v0.models.Person]] = {
     Future {
+      logger.debug(s"[tenant: $tenant] Producing a single People message: [${data}]")
       kafkaPersonProducer.send(data, tenant)
     }
   }
@@ -36,6 +41,7 @@ class PeopleService @Inject() (config: Config) {
     tenant: String
   ): Future[Try[Seq[movio.apidoc.generator.reference.v0.models.Person]]] = {
     Future {
+      logger.debug(s"[tenant: $tenant] Producing a batch of [${data.size}] People messages")
       kafkaPersonProducer.send(data, tenant)
     }
   }
