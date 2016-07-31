@@ -10,6 +10,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 import play.api.libs.json._
+import play.api.Logger
 
 import scala.concurrent.duration._
 import scala.concurrent.Future
@@ -20,12 +21,16 @@ class HealthchecksController @Singleton @Inject() (service: HealthchecksService)
   import movio.apidoc.generator.reference.v0.models._
   import movio.apidoc.generator.reference.v0.models.json._
   import play.api.libs.concurrent.Execution.Implicits.defaultContext
+
+  private val logger = Logger(this.getClass)
+
   
   def getInternalAndHealthcheck() = play.api.mvc.Action.async {  request =>
     service.get(request).map{_ match {
       case scala.util.Success(result) =>
         Status(200)(Json.toJson(result))
       case scala.util.Failure(ex) =>
+        logger.error(s"[getInternalAndHealthcheck] Error processing request []", ex)
         errorResponse(ex, msg => Error("500", msg))
     }}
   }
@@ -36,7 +41,7 @@ class HealthchecksController @Singleton @Inject() (service: HealthchecksService)
       val message = node._2.map(_.message).mkString
       s"$nodeName$message"
     }).mkString
-    scala.concurrent.Future(InternalServerError(Json.toJson(create(msg))))
+    scala.concurrent.Future(BadRequest(Json.toJson(create(msg))))
   }
 
   private def errorResponse[A: Writes](ex: Throwable, create: String => A): play.api.mvc.Result =

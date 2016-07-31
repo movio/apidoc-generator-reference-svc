@@ -6,24 +6,29 @@
 
 package services
 
+import scala.concurrent.Future
+import scala.util.Try
 import javax.inject.Inject
 
 import com.typesafe.config.Config
 
 import play.api.mvc.Request
-import scala.concurrent.Future
-import scala.util.Try
+import play.api.Logger
 
 class HealthchecksService @Inject() (config: Config) {
   import movio.apidoc.generator.reference.v0.models._
   import movio.apidoc.generator.reference.v0.kafka._
   import play.api.libs.concurrent.Execution.Implicits.defaultContext
   
+
+  private val logger = Logger(this.getClass)
+
   
   def get[T](
     request: Request[T]
   ): Future[Try[movio.apidoc.generator.reference.v0.models.Healthcheck]] = {
     Future {
+
       Try { 
         Healthcheck (
           status = "status1"

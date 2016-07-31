@@ -10,6 +10,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 import play.api.libs.json._
+import play.api.Logger
 
 import scala.concurrent.duration._
 import scala.concurrent.Future
@@ -20,18 +21,23 @@ class PeopleController @Singleton @Inject() (service: PeopleService) extends pla
   import movio.apidoc.generator.reference.v0.models._
   import movio.apidoc.generator.reference.v0.models.json._
   import play.api.libs.concurrent.Execution.Implicits.defaultContext
+
+  private val logger = Logger(this.getClass)
+
   
   def postV0AndPersonByTenant(
     tenant: String
   ) = play.api.mvc.Action.async(play.api.mvc.BodyParsers.parse.json) {  request =>
     request.body.validate[movio.apidoc.generator.reference.v0.models.Person] match {
       case errors: JsError =>
-        errorResponse(errors, msg => Error("500", msg))
+        logger.warn(s"[postV0AndPersonByTenant] Error validating the body for the request [tenant: $tenant], body: [${request.body}], error: [$errors]")
+        errorResponse(errors, msg => Error("400", msg))
       case body: JsSuccess[movio.apidoc.generator.reference.v0.models.Person] =>
         service.post(request, body.get, tenant).map{_ match {
           case scala.util.Success(result) =>
             Status(201)(Json.toJson(result))
           case scala.util.Failure(ex) =>
+            logger.error(s"[postV0AndPersonByTenant] Error processing request [tenant: $tenant]", ex)
             errorResponse(ex, msg => Error("500", msg))
         }}
     }
@@ -42,12 +48,14 @@ class PeopleController @Singleton @Inject() (service: PeopleService) extends pla
   ) = play.api.mvc.Action.async(play.api.mvc.BodyParsers.parse.json) {  request =>
     request.body.validate[Seq[movio.apidoc.generator.reference.v0.models.Person]] match {
       case errors: JsError =>
-        errorResponse(errors, msg => Error("500", msg))
+        logger.warn(s"[postV0ByTenant] Error validating the body for the request [tenant: $tenant], body: [${request.body}], error: [$errors]")
+        errorResponse(errors, msg => Error("400", msg))
       case body: JsSuccess[Seq[movio.apidoc.generator.reference.v0.models.Person]] =>
         service.post(request, body.get, tenant).map{_ match {
           case scala.util.Success(result) =>
             Status(200)(Json.toJson(result.size))
           case scala.util.Failure(ex) =>
+            logger.error(s"[postV0ByTenant] Error processing request [tenant: $tenant]", ex)
             errorResponse(ex, msg => Error("500", msg))
         }}
     }
@@ -59,7 +67,7 @@ class PeopleController @Singleton @Inject() (service: PeopleService) extends pla
       val message = node._2.map(_.message).mkString
       s"$nodeName$message"
     }).mkString
-    scala.concurrent.Future(InternalServerError(Json.toJson(create(msg))))
+    scala.concurrent.Future(BadRequest(Json.toJson(create(msg))))
   }
 
   private def errorResponse[A: Writes](ex: Throwable, create: String => A): play.api.mvc.Result =
