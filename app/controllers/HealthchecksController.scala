@@ -45,6 +45,6 @@ class HealthchecksController @Singleton @Inject() (service: HealthchecksService)
   }
 
   private def errorResponse[A: Writes](ex: Throwable, create: String => A): play.api.mvc.Result =
-    InternalServerError(Json.toJson(create(ex.getMessage)))
+    InternalServerError(Json.toJson(create("Unexpected server error, please try again")))
 
 }
