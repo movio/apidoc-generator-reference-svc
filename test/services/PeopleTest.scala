@@ -69,7 +69,8 @@ class PeopleSystemTest extends MovioSpec with KafkaTestKit with OneServerPerSuit
       name = "name1",
       lastActiveTime = None,
       dob = None,
-      addresses = List.empty
+      addresses = List.empty,
+      gender = Gender.Male
     )
 val personEntity2 = 
     Person (
@@ -77,7 +78,8 @@ val personEntity2 =
       name = "name2",
       lastActiveTime = None,
       dob = None,
-      addresses = List.empty
+      addresses = List.empty,
+      gender = Gender.Male
     )
   val personEntities = Seq(personEntity1, personEntity2)
 
